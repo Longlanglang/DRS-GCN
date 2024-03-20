@@ -29,26 +29,25 @@ def  get_class_adj(node_num, labels):
     inter_class_adj = (inter_class_adj * diagonal_zero_matrix)
     return intra_class_adj, inter_class_adj
 
-# MADGap衡量的是整个图的过平滑性（不同类别节点之间的差异），改用MAD计算节点之间的相似度作为损失函数正则化
 def get_smo_loss(representation, intra_class_adj, inter_class_adj):
     """
     用以计算节点之间的平滑度
     :param representation: 输入节点表示作为计算节点相似度的依据
     :param intra_class_adj: 同类别节点矩阵
     :param inter_class_adj: 不同类比额节点矩阵
-    :return: MAD_inter_class 表征所有不同类别节点之间相似度的均值,
-             MAD_intra_class 表征所有相同类别节点之间相似度的均值
+    :return: SMO_inter_class 表征所有不同类别节点之间相似度的均值,
+             SMO_intra_class 表征所有相同类别节点之间相似度的均值
     """
     representation_normalized = representation / (representation.norm(2, 1).reshape(-1, 1) + 1e-10)
 
-    MAD_Matrix = 1 - representation_normalized @ representation_normalized.T
+    SMO_Matrix = 1 - representation_normalized @ representation_normalized.T
 
-    MAD_intra_class = (MAD_Matrix * intra_class_adj).sum() / ((intra_class_adj).sum()).to(device)
-    MAD_inter_class = (MAD_Matrix * inter_class_adj).sum() / ((inter_class_adj).sum()).to(device)
+    SMO_intra_class = (MAD_Matrix * intra_class_adj).sum() / ((intra_class_adj).sum()).to(device)
+    SMO_inter_class = (MAD_Matrix * inter_class_adj).sum() / ((inter_class_adj).sum()).to(device)
 
-    return MAD_inter_class, MAD_intra_class
+    return SMO_inter_class, SMO_intra_class
 
-def get_global_mad(representation):
+def get_global_SMO(representation):
     representation_normalized = representation / (representation.norm(2, 1).reshape(-1, 1) + 1e-10)
     MAD_Matrix = 1 - representation_normalized @ representation_normalized.T
     # 找到非零元素的索引
